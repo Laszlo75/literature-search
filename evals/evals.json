@@ -1,0 +1,47 @@
+{
+  "skill_name": "literature-search",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Search for evidence on CMV prophylaxis in solid organ transplant recipients. I want to know what the latest guidelines say and what new drugs have emerged. I'm a consultant in transplant medicine in the UK.",
+      "expected_output": "An evidence summary .docx covering valganciclovir prophylaxis, letermovir and maribavir evidence, donor/recipient serostatus risk stratification. Should reference BTS guidelines with evidence grades. Should produce a YAML reference ledger, .bib file, and PMID list. 15-30 references.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Find the latest literature on perioperative anticoagulation management in patients on DOACs. What do NICE and BSH say? Export the references for Zotero.",
+      "expected_output": "Evidence summary covering DOAC bridging, perioperative management, reversal agents, risk stratification. Should reference NICE and BSH guidelines with evidence grades. Should produce YAML ledger, .bib, and PMID list.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "What does the current evidence say about rituximab dosing for ABO-incompatible kidney transplantation? Search PubMed and check the BTS guidelines.",
+      "expected_output": "Evidence summary covering rituximab dose-finding studies, single-dose vs standard protocols, outcomes data. Should reference BTS guidelines for antibody incompatible transplantation. Should produce YAML ledger, .bib, and PMID list.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "I'm updating our haematology unit's guideline on rituximab for autoimmune haemolytic anaemia. What does the current evidence say and what do BSH guidelines recommend?",
+      "expected_output": "Evidence summary covering rituximab dosing regimens in warm AIHA (standard vs low-dose), response rates, duration of response, retreatment data, and BSH guideline recommendations. Should include steroid-refractory disease evidence. Should reference BSH guidelines for autoimmune haemolytic anaemia with evidence grades. Should produce YAML ledger, .bib, and PMID list. Tests generalisation to haematology outside transplant domain.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "What's the latest evidence on anticoagulation choice in non-valvular AF for patients with CKD stage 3-4? I'm a cardiologist updating our local guideline.",
+      "expected_output": "Evidence summary covering DOAC use in CKD (apixaban, rivaroxaban, edoxaban, dabigatran), dose adjustments by eGFR, renal outcomes data, comparison with warfarin, and NICE/ESC/EHRA guideline recommendations. Should note where UK MHRA licensing differs from European guidance. Should produce YAML ledger, .bib, and PMID list. Tests generalisation to cardiology domain.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "I need a literature search on CAR-T cell therapy for relapsed/refractory DLBCL. This is a rapidly evolving field so I want to know about any recent preprints and ongoing trials as well as the published evidence and NICE technology appraisals.",
+      "expected_output": "Evidence summary covering approved CAR-T products (axi-cel, tisa-cel, liso-cel), NICE TAs, outcomes data, toxicity management (CRS, ICANS), and comparison with salvage chemotherapy. Should include an Emerging Evidence section with relevant medRxiv preprints. Should include ongoing trials (Phase II/III) in the Evidence Gaps section with NCT numbers. Tests bioRxiv and ClinicalTrials.gov integration.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Search for evidence on cancer treatment",
+      "expected_output": "The skill should recognise this topic is too broad and ask the user to narrow the focus before proceeding with searches. Tests the scope guardrail.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+# Output files generated during literature searches
+*_Evidence_Summary_*.md
+*_Evidence_Summary_*.docx
+*_References.yaml
+*_References.bib
+*_PMIDs.txt
+
+# Claude Code
+.claude/
