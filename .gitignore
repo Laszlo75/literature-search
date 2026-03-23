@@ -5,5 +5,11 @@
 *_References.bib
 *_PMIDs.txt
 
+# Packaged skill (distributed via GitHub releases)
+*.skill
+
+# Working ledger (generated during searches)
+_working_ledger.yaml
+
 # Claude Code
 .claude/
