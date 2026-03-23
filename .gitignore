@@ -8,6 +8,9 @@
 # Packaged skill (distributed via GitHub releases)
 *.skill
 
+# Development artifacts
+IMPROVEMENT_PLAN.md
+
 # Working ledger (generated during searches)
 _working_ledger.yaml
 
