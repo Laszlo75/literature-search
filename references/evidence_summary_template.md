@@ -115,7 +115,9 @@ reviewing clinician. References have been verified against PubMed metadata.*
 
 **Reviewed and approved by:** ______________________ *(name, title, and institution)*
 
-*AI system metadata: literature-search · [model identifier] · PubMed MCP · Scholar Gateway · Search date [YYYY-MM-DD] · [github.com/Laszlo75/literature-search](https://github.com/Laszlo75/literature-search)*
+*AI system metadata: literature-search · [model identifier] · PubMed MCP · Scholar Gateway · Search date [YYYY-MM-DD]*
+
+*Skill repository: [github.com/Laszlo75/literature-search](https://github.com/Laszlo75/literature-search) — copy this link exactly, do not substitute a different repository URL*
 
 # 8. References
 

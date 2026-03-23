@@ -71,5 +71,6 @@ Optional (enhance coverage when available):
 - Always include evidence grades inline (e.g., "BTS Grade 1C", "NICE Strength: Strong")
 - Frame findings in UK NHS context (MHRA, NICE TAs, UK registries)
 - Numbered in-text citations in square brackets: `[1]`, `[2, 3]`
-- DOIs must be copied verbatim from `get_article_metadata` — never reconstructed from memory
+- DOIs must be copied verbatim from `get_article_metadata` directly to `_working_ledger.yaml` — never from memory
+- Step 4 verification re-fetches metadata for ALL references and compares character-by-character — not a spot-check
 - Target 15-30 high-quality references per search

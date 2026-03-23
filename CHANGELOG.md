@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-03-23
+
+### Changed
+
+- **Step 3 record-keeping: immediate write-to-file** — metadata from `get_article_metadata` must now be written to `_working_ledger.yaml` immediately after each call, in the same turn, not batched. This prevents context drift from corrupting DOIs and author names.
+- **Step 4 verification: verify ALL references, not spot-check** — previously said "spot-check at least 5"; now requires re-fetching metadata for every PubMed reference and comparing DOI, title, and first author character-by-character. PubMed is authoritative; any mismatch overwrites the ledger.
+- **Step 5: re-read ledger from disk** — before writing the reference list, the model must re-read `_working_ledger.yaml` from file, not from context memory.
+- **YAML schema: expanded author fields** — `authors` replaced with `first_author` (surname + initials) and `authors_full` (complete author list), both copied verbatim from PubMed.
+- Added real failure case as concrete warning in record-keeping section (DOI differed by 3 characters, wrong first author — caught only by re-verification against PubMed).
+
 ## [1.3.0] - 2026-03-22
 
 ### Added

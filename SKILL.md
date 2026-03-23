@@ -1,6 +1,8 @@
 ---
 name: literature-search
-version: "1.3.0"
+version: "1.4.0"
+model: opus
+effort: max
 description: >
   Search PubMed, Scholar Gateway, and national guideline websites for clinical evidence
   on a given topic. Produces a structured evidence summary (.docx), reference ledger (YAML),
@@ -276,33 +278,51 @@ This is critical for reference accuracy. As you search, maintain a **reference l
 when writing the evidence summary and .bib file. This prevents DOI/title mismatches.
 
 For every paper you plan to cite, call `get_article_metadata` to retrieve the full
-metadata, then record these fields **exactly as PubMed returns them**:
+metadata. Then — **in the same turn, before doing anything else** — write the
+metadata to the working ledger file `_working_ledger.yaml`. This is the single most
+important instruction in this skill: metadata must go from the tool output directly
+to the file, never through memory.
+
+**The mechanical process is:**
+1. Call `get_article_metadata` with the PMID
+2. Read the DOI, title, authors, journal, year, volume, and pages from the tool response
+3. Immediately append a YAML entry to `_working_ledger.yaml` copying those fields
+   character-for-character from the tool output
+4. Only then move on to the next paper
+
+Record these fields **exactly as PubMed returns them** — do not paraphrase, reorder
+authors, or reconstruct any field from memory:
 
 ```
 REF_ID: [sequential number, assigned when you decide to include the paper]
-PMID: [from PubMed]
-DOI: [from PubMed metadata — copy exactly, do NOT reconstruct from memory]
-AUTHORS: [from PubMed metadata]
-TITLE: [from PubMed metadata — copy exactly]
+PMID: [from PubMed — copy exactly]
+DOI: [from PubMed metadata — copy exactly, character for character]
+FIRST_AUTHOR: [first author surname and initials, copied from PubMed]
+AUTHORS_FULL: [full author list as PubMed returns it]
+TITLE: [from PubMed metadata — copy exactly, every word]
 JOURNAL: [from PubMed metadata]
 YEAR: [from PubMed metadata]
-VOLUME/PAGES: [from PubMed metadata]
-KEY_FINDING: [your one-sentence summary]
+VOLUME: [from PubMed metadata]
+PAGES: [from PubMed metadata]
+KEY_FINDING: [your one-sentence summary — this is the only field you write yourself]
 SOURCE: [pubmed / scholar_gateway / both]
 FULL_TEXT_REVIEWED: [true / false]
 ```
 
-**Why this matters:** DOIs are opaque identifiers — there is no way to guess or
-reconstruct a DOI from a paper title. If you write a DOI from memory rather than
-copying it from the PubMed metadata, it will almost certainly be wrong and will link
-to the wrong paper (or a dead link). This destroys the reader's trust in the entire
-document. Always copy DOIs character-for-character from `get_article_metadata` output.
+**Why this matters:** In testing, a reference was produced with a DOI that differed
+by just 3 characters from the real one (`blood.2018894368` vs `blood.2018894618`) and
+the wrong first author — because the model wrote from memory instead of copying from
+PubMed. The DOI looked plausible but resolved to nothing. The reader would find a
+dead link and lose trust in the entire document. This is not a theoretical risk; it
+happened. The only defence is mechanical copying from tool output to file, with no
+memory step in between.
 
-**Write the ledger to a file as you go.** After each batch of searches (e.g., after
-completing one subtopic's PubMed + Scholar Gateway queries), append the new entries
-to a working file called `_working_ledger.yaml`. This protects against context loss
-during long searches with many tool calls. The final `_References.yaml` is a
-cleaned-up version of this working file with sequential ref_ids assigned.
+**Write to file immediately, not in batches.** After each `get_article_metadata` call,
+append the entry to `_working_ledger.yaml` right away. Do not accumulate entries in
+context and write them later — context drift over many tool calls causes exactly the
+kind of subtle corruption (wrong DOI suffix, swapped authors) that is hardest to catch.
+The final `_References.yaml` is a cleaned-up version of this working file with
+sequential ref_ids assigned.
 
 For guidelines found via web search (not in PubMed), record:
 ```
@@ -320,36 +340,53 @@ Do not add any reference that is not in the ledger. Do not modify DOIs or titles
 
 ## Step 4: Verify Reference Integrity
 
-Before generating outputs, verify that every reference is accurate. This step
-is essential because incorrect DOIs or misattributed papers undermine the entire output.
+This is the most important quality gate in the entire workflow. Do not skip it,
+do not abbreviate it, do not "spot-check." Every reference must be verified.
 
-### Verification checklist
+In testing, skipping this step produced a reference with a plausible-looking but
+completely wrong DOI (3 characters different) and the wrong first author. The error
+was undetectable without re-checking against PubMed. This step exists to catch
+exactly that kind of failure.
 
-1. **DOI spot-check**: For at least 5 PubMed references, call `get_article_metadata` with
-   the PMID and confirm the DOI in your ledger matches exactly. If any don't match,
-   check and fix all references.
+### 4a. Re-verify EVERY PubMed reference against source
 
-2. **Scholar Gateway-only references**: For every reference with `source: scholar_gateway`
-   (no PMID), verify the DOI format is valid (`10.XXXX/...`) and attempt to cross-check
-   by searching PubMed for the title. If you find a PubMed match, update the ledger with
-   the PMID and PubMed metadata. If no PubMed match exists, keep the Scholar Gateway
-   metadata but note this reference has lower verification confidence.
+For **every** reference in `_working_ledger.yaml` that has a PMID:
 
-3. **Title-PMID consistency**: Confirm that the title in your reference ledger matches the
-   title returned by PubMed for that PMID. A title mismatch means the wrong paper is cited.
+1. Call `get_article_metadata` with the PMID
+2. Compare the returned DOI against the DOI in your ledger — **character by character**
+3. Compare the returned title against the title in your ledger — **word by word**
+4. Compare the returned first author against the first author in your ledger
+5. If **any** field does not match exactly, overwrite the ledger entry with the
+   fresh PubMed data. Do not try to figure out which version is "right" — the
+   PubMed metadata is authoritative, always.
 
-4. **Retraction check**: Scan all PubMed reference titles for "[Retracted]" or
-   "[Retraction of:" markers. Also check whether `get_article_metadata` indicates
-   retraction status. A retracted paper must never appear in a clinical evidence summary
-   — remove it and note the retraction in the Evidence Gaps section if it was a key paper.
+After completing all re-verifications, re-read `_working_ledger.yaml` to confirm
+the corrections were written.
 
-5. **No fabricated references**: Every PubMed reference must have a real PMID that you
+### 4b. Verify Scholar Gateway-only references
+
+For every reference with `source: scholar_gateway` (no PMID):
+
+1. Verify the DOI format is valid (`10.XXXX/...`)
+2. Search PubMed for the paper by title to find its PMID
+3. If found in PubMed, call `get_article_metadata` and update the ledger with
+   PubMed metadata (PMID, DOI, authors, title). Change source to `both`.
+4. If not in PubMed, keep the Scholar Gateway metadata but add a note:
+   `verification: "scholar_gateway_only — not cross-checked against PubMed"`
+
+### 4c. Retraction check
+
+Scan all reference titles for "[Retracted]" or "[Retraction of:" markers.
+A retracted paper must never appear in a clinical evidence summary — remove it
+and note the retraction in the Evidence Gaps section if it was a key paper.
+
+### 4d. Final integrity checks
+
+1. **No fabricated references**: Every PubMed reference must have a real PMID that you
    retrieved during Step 3. Never invent a PMID or DOI.
-
-6. **DOI format check**: DOIs should look like `10.XXXX/...` — if any DOI doesn't start
-   with `10.`, it's malformed. The full URL form is `https://doi.org/10.XXXX/...`.
-
-7. **Citation-reference mapping**: Every `[N]` citation in the evidence summary must
+2. **DOI format check**: Every DOI must start with `10.`. The full URL form is
+   `https://doi.org/10.XXXX/...`.
+3. **Citation-reference mapping**: Every `[N]` citation in the evidence summary must
    correspond to entry N in the reference list. Every reference must be cited at least once.
 
 If you find errors during verification, fix them before generating the final outputs.
@@ -365,11 +402,14 @@ and pandoc conversion command.
 
 ### High-level process
 
-1. **Read `references/evidence_summary_template.md`** for the full document structure,
+1. **Re-read `_working_ledger.yaml` from disk.** Do not rely on your memory of what the
+   ledger contains — read the file. All DOIs, titles, authors, and PMIDs in the evidence
+   summary and .bib file must come from this file, not from context.
+2. **Read `references/evidence_summary_template.md`** for the full document structure,
    content rules, and pandoc conversion command
-2. **Write the evidence summary as Markdown** with YAML frontmatter for the title page
-3. **Convert to .docx** using pandoc with the bundled `assets/reference.docx` template
-4. **Generate .bib and PMIDs.txt** files for Zotero import (format specified in the template)
+3. **Write the evidence summary as Markdown** with YAML frontmatter for the title page
+4. **Convert to .docx** using pandoc with the bundled `assets/reference.docx` template
+5. **Generate .bib and PMIDs.txt** files for Zotero import (format specified in the template)
 
 The template file covers the document structure, draft callout, transparency disclaimer,
 content standards, and reference formatting. Follow it exactly — do not deviate from
@@ -394,7 +434,7 @@ It must follow this exact format:
 metadata:
   topic: "[clinical topic]"
   search_date: "[YYYY-MM-DD]"
-  skill_version: "1.3.0"
+  skill_version: "1.4.0"
   model_id: "[model identifier]"
   mesh_terms:
     - "[MeSH term 1]"
@@ -417,9 +457,10 @@ guidelines:
 references:
   - ref_id: 2
     pmid: "[PMID or null]"
-    doi: "[DOI]"
-    authors: "[authors]"
-    title: "[title — copied exactly from PubMed]"
+    doi: "[DOI — copied character-for-character from PubMed]"
+    first_author: "[first author surname and initials — copied from PubMed]"
+    authors_full: "[full author list as PubMed returns it]"
+    title: "[title — copied exactly from PubMed, every word]"
     journal: "[journal name]"
     year: [YYYY]
     volume: "[volume]"
