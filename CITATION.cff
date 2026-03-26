@@ -1,0 +1,26 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+type: software
+title: "Clinical Literature Search Skill"
+abstract: >-
+  A Claude Code skill that performs systematic clinical literature searches
+  using PubMed and Scholar Gateway. Given a clinical topic, it searches for
+  current national guidelines and published evidence, then produces a
+  structured evidence summary document, a YAML reference ledger, and
+  Zotero-compatible reference exports.
+version: 1.4.0
+date-released: 2026-03-26
+license: CC-BY-NC-4.0
+repository-code: "https://github.com/Laszlo75/literature-search"
+authors:
+  - given-names: Laszlo
+    family-names: Szabo
+    orcid: 0000-0002-6881-1542
+    alias: Laszlo75
+keywords:
+  - clinical-evidence
+  - literature-search
+  - pubmed
+  - evidence-synthesis
+  - claude-code-skill
+  - systematic-review
