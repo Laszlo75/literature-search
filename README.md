@@ -1,5 +1,8 @@
 # Clinical Literature Search
 
+> [!IMPORTANT]
+> This skill has moved. It is now `research-summary` in the **clinical-evidence** plugin of the [clinical-research-toolkit](https://github.com/Laszlo75/clinical-research-toolkit). Install it in Claude Code with `/plugin marketplace add Laszlo75/clinical-research-toolkit`, then `/plugin install clinical-evidence@clinical-research`. This repository is archived and no longer maintained.
+
 A Claude skill that searches PubMed, Scholar Gateway, and national guideline websites for clinical evidence on a given topic, producing a structured evidence summary document and verified reference list.
 
 ## What It Does
